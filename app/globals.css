@@ -1,0 +1,365 @@
+/* ===========================================
+   Global theme + brand system (light & dark)
+   Bootstrap is already imported in layout.js
+   =========================================== */
+
+/* ---------- Light theme (default) ---------- */
+
+:root {
+  --bg: #f6f8fc;
+  --text: #0e1a36;
+  --muted: #5e6b86;
+  --card: #ffffff;
+  --border: rgba(24,39,75,.12);
+  --primary: #275FCA;
+  --link: var(--primary);
+
+  --glass-weak: rgba(255,255,255,.55);
+  --glass-strong: rgba(255,255,255,.72);
+
+  --rainbow: linear-gradient(90deg,#ff004c,#ff7a00,#ffea00,#00f5a0,#00d1ff,#0068ff,#a100ff,#ff004c);
+
+  /* hero ambient */
+  --hero-dot: rgba(0,0,0,.06);
+  --hero-ambient-a: rgba(0,209,255,.08);
+  --hero-ambient-b: rgba(47,107,255,.08);
+  --hero-well-1: rgba(3,25,46,.85);
+  --hero-well-2: rgba(3,25,46,.60);
+
+  color-scheme: light;
+}
+
+/* ---------- Dark theme overrides ---------- */
+html[data-theme="dark"] {
+  --bg: #0b1220;
+  --text: #e6ecff;
+  --muted: #9aa6c0;
+  --card: #0f1a2b;
+  --border: rgba(230,236,255,.14);
+  --primary: #7ab8ff;
+  --link: var(--primary);
+
+  --glass-weak: rgba(15,26,43,.55);
+  --glass-strong: rgba(15,26,43,.72);
+
+  --rainbow: linear-gradient(90deg,#ff6b6b,#ff9f43,#ffd93d,#1dd1a1,#48dbfb,#54a0ff,#a66cff,#ff6b6b);
+
+  --hero-dot: rgba(255,255,255,.06);
+  --hero-ambient-a: rgba(72,219,251,.08);
+  --hero-ambient-b: rgba(84,160,255,.08);
+  --hero-well-1: rgba(6,12,24,.92);
+  --hero-well-2: rgba(6,12,24,.66);
+
+  color-scheme: dark;
+}
+
+/* Map to Bootstrap tokens */
+:root,
+html[data-theme="dark"]{
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--text);
+  --bs-border-color: var(--border);
+  --bs-link-color: var(--link);
+  --bs-primary: var(--primary);
+}
+
+/* ---------- Base ---------- */
+html, body { background: var(--bg); color: var(--text); }
+html,body{ scroll-behavior: smooth; }
+a { text-decoration: none; }
+
+/* Smooth theme fade */
+html[data-theme] *{
+  transition: background-color .20s ease, color .20s ease, border-color .20s ease;
+}
+
+/* Utilities */
+.text-brand{ color: var(--primary)!important; }
+.bg-brand-soft{ background: color-mix(in oklab, var(--primary) 12%, white 88%); }
+.section{ padding: 72px 0; }
+
+.card-feature{
+  border: none; background: var(--card);
+  box-shadow: 0 10px 30px rgba(16,38,73,.06);
+  border-radius: 18px; color: var(--text);
+}
+
+.btn-brand{
+  background: var(--primary); color:#fff; border:none;
+  box-shadow: 0 8px 24px rgba(39,95,202,.25);
+}
+.btn-brand:hover{ filter:brightness(.95); color:#fff; }
+
+.footer{
+  background: linear-gradient(180deg, color-mix(in oklab, var(--card) 96%, transparent), var(--bg));
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Navbar / CTA / toggle ---------- */
+@keyframes rainbowShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes shineSweep{0%{transform:translateX(-130%) skewX(-18deg)}100%{transform:translateX(130%) skewX(-18deg)}}
+
+.navbar-blur{
+  background: var(--glass-weak);
+  backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top:0; z-index: 1020;
+}
+.navbar-blur.is-scrolled{
+  background: var(--glass-strong);
+  box-shadow: 0 10px 30px rgba(16,38,73,.12);
+}
+.navbar-blur::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+  background: var(--rainbow); background-size:300% 100%;
+  animation: rainbowShift 14s linear infinite; opacity:.9;
+}
+.brand-name{
+  background: linear-gradient(90deg,#6a8dff,#00d1ff,#ff5bd1,#6a8dff);
+  background-size:300% 100%;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation: rainbowShift 10s ease-in-out infinite; letter-spacing:.2px;
+}
+.nav-link{
+  position:relative; padding:.5rem .6rem; border-radius:10px;
+  color: color-mix(in oklab, var(--text) 88%, white 12%); opacity:.95;
+  transition: color .2s ease, opacity .2s ease, background .2s ease;
+}
+.nav-link:hover{ color: var(--text); opacity:1; }
+.nav-link.active{ color: var(--text); font-weight:600; }
+.nav-link::after{
+  content:""; position:absolute; left:10px; right:10px; bottom:6px; height:2px;
+  background: var(--rainbow); background-size:250% 100%;
+  transform:scaleX(0); transform-origin:left; transition:transform .25s ease; border-radius:4px;
+}
+.nav-link:hover::after,.nav-link.active::after{ transform:scaleX(1); }
+
+.btn-rainbow{
+  position:relative; overflow:hidden; border:0; border-radius:14px;
+  padding:8px 14px; color:#fff !important;
+  background: var(--rainbow); background-size:300% 100%;
+  box-shadow: 0 14px 34px rgba(16,38,73,.18);
+  animation: rainbowShift 12s linear infinite;
+  transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+}
+.btn-rainbow::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.6), transparent);
+  transform: translateX(-130%) skewX(-18deg);
+  animation: shineSweep 2.8s ease-in-out infinite;
+}
+.btn-rainbow:hover{ transform:translateY(-2px); filter:brightness(1.02); box-shadow:0 18px 38px rgba(16,38,73,.22); }
+
+.theme-toggle{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  box-shadow: 0 8px 18px rgba(16,38,73,.08);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.theme-toggle:hover{ transform: translateY(-1px); box-shadow: 0 12px 26px rgba(16,38,73,.12); }
+
+/* ===========================================
+   FULL-SCREEN HERO helpers
+   =========================================== */
+:root{ --navH: 64px; }           /* tweak if your navbar is taller */
+
+.hero-full{
+  position: relative;
+  min-height: calc(100svh - var(--navH));
+  display: grid;
+  align-items: center;
+  padding-block: clamp(28px, 5vh, 80px);
+  overflow: hidden;
+}
+
+/* A width that’s wider than Bootstrap container but still centered */
+.container-wide{
+  width: min(1240px, 94vw);
+  margin-inline: auto;
+}
+
+/* Optional: give sections a wider max width too */
+.section .container-wide{ width: min(1180px, 94vw); }
+
+/* Tiny dotted ambient across the whole hero */
+.hero-ambient{
+  position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(1000px 420px at 85% 28%, var(--hero-ambient-a), transparent 60%),
+    radial-gradient(820px 420px at 8% 85%, var(--hero-ambient-b), transparent 65%),
+    radial-gradient(circle, var(--hero-dot) 1px, transparent 1px);
+  background-size: auto, auto, 28px 28px;
+  background-repeat: no-repeat, no-repeat, repeat;
+  mask-image: radial-gradient(1200px 620px at 60% 40%, #000, transparent 70%);
+  opacity: .7;
+}
+
+/* Make the hero grid behave like two columns on desktop */
+.hero-grid{
+  display:grid; grid-template-columns: 1.05fr 1fr; gap: 28px; align-items:center;
+}
+@media (max-width: 991.98px){
+  .hero-grid{ grid-template-columns: 1fr; gap: 22px; text-align: center; }
+}
+/* ===== Full-screen hero helpers ===== */
+:root { --nav-h: 64px; }                 /* match your navbar height */
+@media (max-width: 991.98px){ :root{ --nav-h: 58px; } }
+
+.hero-full{
+  position: relative;
+  /* fill the screen minus the sticky navbar; clamp prevents absurd heights */
+  min-height: clamp(620px, calc(100dvh - var(--nav-h)), 980px);
+  display: grid;
+  align-items: center;
+  isolation: isolate;                    /* keep ambient behind content */
+  overflow: hidden;                      /* hide ambient overflow */
+  padding-block: clamp(16px, 3vh, 32px); /* gentle breathing room */
+}
+
+/* center the inner content at a nice reading width */
+.container-wide{ width: min(1200px, 92vw); margin-inline: auto; }
+
+/* left (text) / right (photo) */
+.hero-grid{
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(16px, 3vw, 32px);
+}
+@media (max-width: 991.98px){
+  .hero-grid{ grid-template-columns: 1fr; }
+}
+
+/* full-bleed ambient background for the hero area */
+.hero-ambient{
+  position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(1100px 620px at 74% 8%,
+      color-mix(in oklab, var(--primary) 18%, transparent) 0%,
+      transparent 65%),
+    radial-gradient(900px 520px at 18% 40%,
+      color-mix(in oklab, #00d1ff 22%, transparent) 0%,
+      transparent 70%),
+    radial-gradient(1200px 800px at 50% 120%,
+      color-mix(in oklab, #ff5bd1 14%, transparent) 0%,
+      transparent 70%);
+  opacity: .85;
+}
+
+/* dark mode ambient tweaks */
+[data-theme="dark"] .hero-ambient{
+  background:
+    radial-gradient(1100px 620px at 74% 8%,
+      color-mix(in oklab, var(--primary) 26%, transparent) 0%,
+      transparent 65%),
+    radial-gradient(900px 520px at 18% 40%,
+      color-mix(in oklab, #00d1ff 30%, transparent) 0%,
+      transparent 70%),
+    radial-gradient(1200px 800px at 50% 120%,
+      color-mix(in oklab, #ff5bd1 22%, transparent) 0%,
+      transparent 70%);
+  opacity:.9;
+}
+
+/* Make sure the navbar exposes its height to the hero calc */
+.navbar-blur{ --nav-h: 64px; }
+@media (max-width: 991.98px){ .navbar-blur{ --nav-h: 58px; } }
+.f2 .col-lg-7 { overflow: visible; }
+@media (min-width: 992px){
+  .globe-wrap{ transform: translateX(-20px); }
+}
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+
+/* ========= Unify “box” styling for the whole contact area ========= */
+
+/* 1) Card surface: same glass on all children */
+.f2-card.contact-animated{
+  --panel: color-mix(in oklab, var(--card) 92%, transparent);
+  --panel-strong: color-mix(in oklab, var(--card) 96%, transparent);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 38px rgba(16,38,73,.14);
+  border-radius: 20px;
+}
+
+/* 2) Labels and help text to consistent tone */
+.f2-card.contact-animated label{
+  color: color-mix(in oklab, var(--text) 92%, white 8%);
+  font-weight: 600;
+  letter-spacing: .1px;
+}
+.f2-card.contact-animated .form-text{
+  color: color-mix(in oklab, var(--text) 55%, transparent);
+}
+
+/* 3) Inputs: same surface, radius, border, focus ring */
+.f2-card.contact-animated .form-control,
+.f2-card.contact-animated .form-select,
+.f2-input{
+  height: 44px;
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .12s ease;
+}
+.f2-card.contact-animated textarea.form-control{
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Focus feel matches your theme */
+.f2-card.contact-animated .form-control:focus,
+.f2-card.contact-animated .form-select:focus,
+.f2-input:focus{
+  border-color: color-mix(in oklab, var(--primary) 55%, var(--border));
+  box-shadow: 0 0 0 .2rem color-mix(in oklab, var(--primary) 28%, transparent);
+  transform: translateY(-1px);
+}
+
+/* Placeholder color consistent */
+.f2-card.contact-animated .form-control::placeholder{
+  color: color-mix(in oklab, var(--text) 55%, transparent);
+}
+
+/* 4) Button: keep your pill gradient but trim shadow for coherence */
+.f2-card.contact-animated .f2-btn{
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  box-shadow: 0 12px 26px rgba(16,38,73,.18);
+}
+
+/* 5) Grid and gutters: tighter, consistent spacing */
+.f2-card.contact-animated .row.g-3{
+  --bs-gutter-x: 14px;
+  --bs-gutter-y: 12px;
+}
+
+/* 6) Remove any accidental nested card looks inside ContactForm */
+.f2-card.contact-animated .card,
+.f2-card.contact-animated .list-group,
+.f2-card.contact-animated .input-group-text{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* 7) Consistent radius for any overflow elements */
+.f2-card.contact-animated *{
+  border-radius: 12px;
+}
+
+/* 8) Dark mode safety if you flip variables later */
+@media (prefers-color-scheme: dark){
+  .f2-card.contact-animated{
+    box-shadow: 0 20px 44px rgba(0,0,0,.45);
+  }
+}
