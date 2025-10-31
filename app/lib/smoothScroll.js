@@ -1,17 +1,25 @@
-// app/lib/smoothScroll.js
-export function smoothScrollTo(hash, offset = 80) {
-  const id = hash?.replace('#', '');
-  if (!id) return;
-  const el = document.getElementById(id);
-  if (!el) return;
+// lib/smoothScroll.js
+let teardown;
 
-  const rect = el.getBoundingClientRect();
-  const targetY = rect.top + window.pageYOffset - offset;
+export function initSmoothScroll() {
+  if (teardown) return teardown;
 
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) {
-    window.scrollTo(0, targetY);
-    return;
-  }
-  window.scrollTo({ top: targetY, behavior: 'smooth' });
+  let ticking = false;
+  const onScroll = () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        // 👉 do only cheap work here (read scrollTop once, write CSS vars)
+        const el = document.scrollingElement || document.documentElement;
+        const y = el.scrollTop || 0;
+        document.documentElement.style.setProperty('--y', `${Math.round(y)}`);
+      });
+    }
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  teardown = () => window.removeEventListener('scroll', onScroll);
+  return teardown;
 }

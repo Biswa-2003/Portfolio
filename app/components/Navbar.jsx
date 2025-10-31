@@ -1,6 +1,6 @@
+// app/components/Navbar.jsx
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -9,15 +9,13 @@ import logo from '../../public/logo.png';
 export default function Navbar() {
   const pathname = usePathname();
 
-  // UI state
-  const [scrolled, setScrolled] = useState(false);
-  const [progress, setProgress] = useState(0);
+  // Active section only (no state for scrolled/progress → smoother)
   const [activeSection, setActiveSection] = useState(null);
 
   // Refs
   const navRef = useRef(null);
   const ctaRef = useRef(null);
-  const linkRefs = useRef({}); // store DOM nodes for each section link
+  const linkRefs = useRef({});
 
   // Sections to observe (include 'home')
   const sections = useMemo(
@@ -28,7 +26,7 @@ export default function Navbar() {
   const isActivePath = (p) => (pathname === p ? 'active' : '');
   const isActiveSection = (id) => (activeSection === id ? 'active' : '');
 
-  /* ---------- Helpers (local, no extra files) ---------- */
+  /* ---------- Helpers ---------- */
   const smoothScrollTo = (hash, offset = 80) => {
     let target = null;
     try {
@@ -48,25 +46,46 @@ export default function Navbar() {
     });
   };
 
-  /* ---------- Scroll progress + compact bg ---------- */
+  /* ---------- Scroll (GPU-friendly): nav shrink + progress ---------- */
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY || 0;
-      setScrolled(y > 8);
+    const root = document.documentElement;
+    const nav = navRef.current;
+    if (!nav) return;
 
-      const doc = document.documentElement;
-      const h = doc.scrollHeight - window.innerHeight;
-      const pct = h > 0 ? (y / h) * 100 : 0;
-      setProgress(Math.min(100, Math.max(0, pct)));
+    let ticking = false;
 
-      if (y < 60) setActiveSection('home');
+    const update = () => {
+      ticking = false;
+      const el = document.scrollingElement || document.documentElement;
+      const y = el.scrollTop || 0;
+
+      // shrink value 0|1
+      const shrink = y > 24 ? '1' : '0';
+      root.style.setProperty('--navShrink', shrink);
+      // for styling without React state
+      nav.dataset.scrolled = shrink;
+
+      // progress 0..100%
+      const max = el.scrollHeight - el.clientHeight;
+      const pct = max > 0 ? (y / max) * 100 : 0;
+      nav.style.setProperty('--navProg', `${pct.toFixed(2)}%`);
     };
-    onScroll();
+
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    // run once and bind
+    update();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', update, { passive: true });
+
     return () => {
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', update);
     };
   }, []);
 
@@ -103,14 +122,11 @@ export default function Navbar() {
 
     const io = new IntersectionObserver(
       (entries) => {
-        // Get all visible, pick the one nearest the top
         const visible = entries
           .filter((en) => en.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
-        if (visible.length) {
-          setActiveSection(visible[0].target.id);
-        }
+        if (visible.length) setActiveSection(visible[0].target.id);
       },
       { root: null, rootMargin: '-40% 0px -55% 0px', threshold: 0 }
     );
@@ -149,7 +165,7 @@ export default function Navbar() {
     };
   }, [activeSection]);
 
-  /* ---------- 3D gyro parallax (unique) ---------- */
+  /* ---------- 3D gyro parallax (cursor) ---------- */
   useEffect(() => {
     const el = navRef.current;
     if (!el) return;
@@ -270,26 +286,37 @@ export default function Navbar() {
       --rx: 0deg; --ry: 0deg; --mx: .5; --my: .5;
 
       position: sticky; top: 0; z-index: 1030;
-      background: color-mix(in oklab, var(--card) 92%, transparent);
-      backdrop-filter: saturate(140%) blur(10px);
+      background: color-mix(in oklab, var(--card) 94%, transparent);
+      backdrop-filter: saturate(140%) blur(calc(6px + 4px * var(--navShrink, 0)));
       border-bottom: 1px solid var(--border);
-      transition: background .25s ease, box-shadow .25s ease;
+      transition: background .25s ease, box-shadow .25s ease, backdrop-filter .25s ease;
       transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry));
       transform-style: preserve-3d;
+      box-shadow: 0 10px 30px rgba(16,38,73, calc(.06 + .06 * var(--navShrink, 0)));
     }
     @media (prefers-color-scheme: dark) {
       .navbar-merge { --card: color-mix(in oklab, #0b162b 94%, #0b162b); --border: color-mix(in oklab, #a9b6d3 18%, transparent); --text: #dde6ff; }
     }
-    .navbar-merge.is-scrolled { background: color-mix(in oklab, var(--card) 96%, transparent); box-shadow: 0 10px 30px rgba(16,38,73,.12); }
 
     .nav-progress { position: absolute; left: 0; right: 0; top: 0; height: 2px; overflow: hidden; transform: translateZ(8px); }
-    .nav-progress > i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--rainbow); background-size: 300% 100%; animation: rainbowShift 16s linear infinite; transform-origin: left; }
+    .nav-progress > i {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      background: var(--rainbow); background-size: 300% 100%;
+      animation: rainbowShift 16s linear infinite;
+      transform-origin: left;
+      width: var(--navProg, 0%);
+    }
     @keyframes rainbowShift { 0% {background-position:0% 50%} 50% {background-position:100% 50%} 100% {background-position:0% 50%} }
 
-    .navbar-merge::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--rainbow); background-size: 300% 100%; animation: rainbowShift 14s linear infinite; opacity: .85; transform: translateZ(6px); }
+    .navbar-merge::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+      background: var(--rainbow); background-size: 300% 100%;
+      animation: rainbowShift 14s linear infinite; opacity: .85; transform: translateZ(6px);
+    }
 
     .brand-wrap { position: relative; display:flex; align-items:center; gap:.55rem; transform: translateZ(14px); }
-    .brand-name { background: linear-gradient(90deg,#6a8dff,#00d1ff,#ff5bd1,#6a8dff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: rainbowShift 10s ease-in-out infinite; letter-spacing:.2px; }
+    .brand-name { background: linear-gradient(90deg,#6a8dff,#00d1ff,#ff5bd1,#6a8dff); background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text; color: transparent; animation: rainbowShift 10s ease-in-out infinite; letter-spacing:.2px; }
 
     .brand-cube { position:absolute; left:-14px; top:50%; transform: translate(-50%, -50%); width: 18px; height: 18px; perspective: 600px; pointer-events:none; }
     .cube { position:relative; width:100%; height:100%; transform-style:preserve-3d; animation:cubeSpin 8s linear infinite; filter: drop-shadow(0 4px 10px rgba(16,38,73,.18)); }
@@ -337,17 +364,14 @@ export default function Navbar() {
 
   /* ---------- Render ---------- */
   return (
-    <nav
-      ref={navRef}
-      className={`navbar navbar-expand-lg navbar-merge ${scrolled ? 'is-scrolled' : ''}`}
-    >
-      {/* Progress line */}
+    <nav ref={navRef} className="navbar navbar-expand-lg navbar-merge" data-scrolled="0">
+      {/* Progress line (width driven by CSS var --navProg) */}
       <div className="nav-progress" aria-hidden="true">
-        <i style={{ width: `${progress}%` }} />
+        <i />
       </div>
 
       <div className="container">
-        {/* Brand now scrolls to #home on this page */}
+        {/* Brand scrolls to #home */}
         <a className="navbar-brand d-flex align-items-center gap-2 position-relative" href="#home">
           {/* tiny 3D cube */}
           <span className="brand-cube" aria-hidden="true">
@@ -381,7 +405,6 @@ export default function Navbar() {
 
         <div className="collapse navbar-collapse" id="nav">
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-2">
-            {/* Home: anchor for smooth in-page scroll */}
             <li className="nav-item">
               <a
                 href="#home"

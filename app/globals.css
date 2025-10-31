@@ -363,3 +363,20 @@ html { scroll-behavior: smooth; }
     box-shadow: 0 20px 44px rgba(0,0,0,.45);
   }
 }
+/* app/globals.css */
+
+/* Avoid animating box-shadow on scroll; use transform/opacity */
+.card, .f2-card, .f2-card.contact-animated {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* If you had huge shadows, tone them down or remove on mobile */
+@media (max-width: 768px) {
+  .card, .f2-card {
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  }
+}
+
+/* Kill parallax jank */
+.parallax-bg { background-attachment: scroll !important; }

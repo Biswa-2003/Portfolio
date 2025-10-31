@@ -1,16 +1,16 @@
 // app/components/Globe3D.jsx
-"use client";
+'use client';
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, Float } from "@react-three/drei";
-import * as THREE from "three";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Environment, Float /*, Performance*/ } from '@react-three/drei';
+import * as THREE from 'three';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 /* ========= Brand palette ========= */
 const BRAND = [
-  new THREE.Color("#6a8dff"),
-  new THREE.Color("#00d1ff"),
-  new THREE.Color("#7a5cff"),
+  new THREE.Color('#6a8dff'),
+  new THREE.Color('#00d1ff'),
+  new THREE.Color('#7a5cff'),
 ];
 
 const lerp = (a, b, t, out) => (
@@ -20,8 +20,11 @@ const lerp = (a, b, t, out) => (
   out
 );
 const paletteAt = (p, t, out = new THREE.Color()) => {
-  const n = p.length, x = ((t % 1) + 1) % 1;
-  const i = Math.floor(x * n), j = (i + 1) % n, f = x * n - i;
+  const n = p.length,
+    x = ((t % 1) + 1) % 1;
+  const i = Math.floor(x * n),
+    j = (i + 1) % n,
+    f = x * n - i;
   return lerp(p[i], p[j], f, out);
 };
 
@@ -33,15 +36,15 @@ function GradientMat({ speed = 0.06 }) {
   );
 
   if (!mat.userData.uA) {
-    mat.userData.uA = new THREE.Color("#6a8dff");
-    mat.userData.uB = new THREE.Color("#00d1ff");
+    mat.userData.uA = new THREE.Color('#6a8dff');
+    mat.userData.uB = new THREE.Color('#00d1ff');
   }
 
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uA = { value: mat.userData.uA };
     shader.uniforms.uB = { value: mat.userData.uB };
     shader.fragmentShader = shader.fragmentShader.replace(
-      "#include <color_fragment>",
+      '#include <color_fragment>',
       `
         float v = (normal.y * 0.5) + 0.5;
         vec3 g = mix(uA, uB, v);
@@ -62,7 +65,8 @@ function GradientMat({ speed = 0.06 }) {
 
 /* ========= Rings ========= */
 function Ribbon({ radius, tube, tilt, rotate, offset, speed = 0.06 }) {
-  const mesh = useRef(), mat = useRef();
+  const mesh = useRef(),
+    mat = useRef();
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
@@ -75,7 +79,8 @@ function Ribbon({ radius, tube, tilt, rotate, offset, speed = 0.06 }) {
 
   return (
     <mesh ref={mesh} rotation={[tilt, rotate, 0]}>
-      <torusGeometry args={[radius, tube, 48, 256]} />
+      {/* Reduced segments for better perf (was 48, 256) */}
+      <torusGeometry args={[radius, tube, 32, 160]} />
       <meshStandardMaterial ref={mat} metalness={0.35} roughness={0.22} />
     </mesh>
   );
@@ -109,7 +114,7 @@ function RibbonGlobe() {
       <Float speed={1.1} rotationIntensity={0.5} floatIntensity={0.45}>
         <mesh>
           <icosahedronGeometry args={[1.02, 4]} />
-          <meshStandardMaterial color="#ffffff" transparent opacity={0.10} />
+          <meshStandardMaterial color="#ffffff" transparent opacity={0.1} />
         </mesh>
       </Float>
 
@@ -120,7 +125,7 @@ function RibbonGlobe() {
   );
 }
 
-/* ========= Make scene background match page ========= */
+/* ========= Match scene background to page ========= */
 function MatchBackground({ bgColor }) {
   const { scene, gl } = useThree();
   const [bg, setBg] = useState(null);
@@ -130,11 +135,10 @@ function MatchBackground({ bgColor }) {
       setBg(bgColor);
       return;
     }
-    // Try to read CSS var --bg from :root. If it's a gradient or empty, stay transparent.
     const root = document.documentElement;
-    const raw = getComputedStyle(root).getPropertyValue("--bg").trim();
+    const raw = getComputedStyle(root).getPropertyValue('--bg').trim();
     const looksColor =
-      raw && !raw.includes("gradient") && !raw.includes(",") && raw !== "transparent";
+      raw && !raw.includes('gradient') && !raw.includes(',') && raw !== 'transparent';
     setBg(looksColor ? raw : null);
   }, [bgColor]);
 
@@ -145,16 +149,14 @@ function MatchBackground({ bgColor }) {
       gl.setClearColor(c, 1);
     } else {
       scene.background = null;
-      gl.setClearColor(0x000000, 0); // fully transparent
+      gl.setClearColor(0x000000, 0);
     }
   }, [bg, scene, gl]);
 
   return null;
 }
 
-/* ========= Public component =========
-   Pass bgColor="#f7f9ff" if you want a fixed color.
-*/
+/* ========= Public component ========= */
 export default function Globe3D({ className, height = 360, bgColor }) {
   return (
     <div
@@ -162,19 +164,19 @@ export default function Globe3D({ className, height = 360, bgColor }) {
       className={className}
       style={{
         height,
-        width: "100%",
-        background: "transparent",
-        border: "none",
-        boxShadow: "none",
-        borderRadius: "0",
+        width: '100%',
+        background: 'transparent',
+        border: 'none',
+        boxShadow: 'none',
+        borderRadius: '0',
         padding: 0,
         margin: 0,
-        overflow: "visible",
-        display: "flex",
-        alignItems: "center",
+        overflow: 'visible',
+        display: 'flex',
+        alignItems: 'center',
+        pointerEvents: 'none', // avoid blocking scroll/touch
       }}
     >
-      {/* Nuke any inherited box UI */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -191,20 +193,25 @@ export default function Globe3D({ className, height = 360, bgColor }) {
       />
       <Canvas
         style={{
-          background: "transparent",
-          border: "none",
-          boxShadow: "none",
+          background: 'transparent',
+          border: 'none',
+          boxShadow: 'none',
           borderRadius: 0,
-          display: "block",
-          width: "100%",
-          height: "100%",
+          display: 'block',
+          width: '100%',
+          height: '100%',
         }}
         camera={{ position: [0, 0, 3.2], fov: 45 }}
-        dpr={[1, 2]}
+        dpr={[1, 2]}               // 1x to 2x DPR for crispness without overkill
         shadows={false}
-        gl={{ antialias: true, alpha: true, premultipliedAlpha: true }}
+        gl={{
+          antialias: true,
+          alpha: true,
+          premultipliedAlpha: true,
+          powerPreference: 'high-performance',
+        }}
       >
-        {/* Background matches your page (or use prop) */}
+        {/* <Performance min={0.5} /> // optional if you import from drei */}
         <MatchBackground bgColor={bgColor} />
 
         <ambientLight intensity={0.6} />

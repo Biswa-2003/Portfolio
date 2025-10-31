@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@barba/core": "^2.10.3",
+    "@react-email/render": "^1.4.0",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
     "animejs": "^4.2.2",
     "bootstrap": "5.3.3",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.23.24",
     "gsap": "^3.13.0",
     "next": "14.2.5",
@@ -22,6 +24,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-icons": "5.3.0",
+    "resend": "^6.3.0",
     "three": "^0.161.0"
   },
   "devDependencies": {
